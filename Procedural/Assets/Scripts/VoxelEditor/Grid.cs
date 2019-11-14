@@ -10,8 +10,7 @@ public class Grid : MonoBehaviour
 
     public int height = 12;
 
-    [SerializeField]
-    private GameObject[,,] currentVoxels;
+    public GameObject[,,] currentVoxels;
 
     public GameObject groundVoxel;
 

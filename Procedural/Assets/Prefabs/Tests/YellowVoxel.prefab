@@ -105,9 +105,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ff9a65950dbcba4fa1510bd4e03cf95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  voxelID: 2
   neightbours:
   - {fileID: 5443692993796647183}
-  - {fileID: 4882331621017868570, guid: dede241b8d5b96248926e639ef96e617, type: 3}
+  - {fileID: 7564678783266528716, guid: 6710135b1555acd4dbd960c2b39e06ee, type: 3}
   - {fileID: 7564678783266528716, guid: 6710135b1555acd4dbd960c2b39e06ee, type: 3}
   - {fileID: 4882331621017868570, guid: dede241b8d5b96248926e639ef96e617, type: 3}
   - {fileID: 7564678783266528716, guid: 6710135b1555acd4dbd960c2b39e06ee, type: 3}
