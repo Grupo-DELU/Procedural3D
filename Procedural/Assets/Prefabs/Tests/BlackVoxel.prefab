@@ -92,6 +92,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ff9a65950dbcba4fa1510bd4e03cf95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  voxelID: 0
   neightbours:
   - {fileID: 7564678783266528716, guid: 6710135b1555acd4dbd960c2b39e06ee, type: 3}
   - {fileID: 0}
@@ -99,6 +100,22 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  top:
+  - {fileID: 5452499004031658761, guid: 68677b3157b13304e9bf31246c8799ad, type: 3}
+  - {fileID: 3901734011413972815, guid: fa2f30a9c3b7ff94f8cf5825570d8526, type: 3}
+  - {fileID: 2185811067573922500, guid: e855a86144a807742be99abe60b56f32, type: 3}
+  - {fileID: 7896062672101495177, guid: 22d3b0d871378e34b8d1f0a0fe255ce8, type: 3}
+  - {fileID: 432471995434275986, guid: f1b5ed1e6105df6499740219085fb59b, type: 3}
+  - {fileID: 1048148377768314477, guid: ccfc1ed2d77a3ca4ebb16f98287d20a9, type: 3}
+  - {fileID: 4414010628218116521, guid: 2a23ac7f683e43f448d7272b2dbce859, type: 3}
+  - {fileID: 3202533194627212055, guid: 6189b37202efba047847dd9b51071585, type: 3}
+  - {fileID: 5071237540220084048, guid: 4820ce2c52df7c74898a405e72a6eea7, type: 3}
+  - {fileID: 1887420266109140050, guid: ba93ed26a7dc12c41b3b329c8d1871f0, type: 3}
+  front: []
+  right: []
+  left: []
+  back: []
+  bottom: []
 --- !u!65 &6722584211443278722
 BoxCollider:
   m_ObjectHideFlags: 0

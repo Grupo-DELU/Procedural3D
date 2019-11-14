@@ -4,8 +4,17 @@ using UnityEngine;
 
 public class Voxel : MonoBehaviour
 {
-    // 0 top, 1 front, 2 right, 3 left, 4 back, 5 bottom
-    public GameObject[] neightbours = new GameObject[6];
+    public int voxelID;
 
-    private GameObject[] currentNeightbours = new GameObject[6];
+    // OLD
+    //public GameObject[] neightbours = new GameObject[6];
+
+    [Header("Neighbors")]
+    public List<Voxel> top = new List<Voxel>();
+    public List<Voxel> front = new List<Voxel>();
+    public List<Voxel> right = new List<Voxel>();
+    public List<Voxel> left = new List<Voxel>();
+    public List<Voxel> back = new List<Voxel>();
+    public List<Voxel> bottom = new List<Voxel>();
+
 }

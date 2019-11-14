@@ -27,7 +27,7 @@ public class WorldGenerator : MonoBehaviour
             }
         }
     }
-
+    /*
     public void GenerateWorld() {
         for(int x = 0; x < width; x++) {
             for(int z = 0; z < depth; z++) {
@@ -89,7 +89,7 @@ public class WorldGenerator : MonoBehaviour
             }
         }
     }
-
+    */
     private bool OnBoundary(int x, int z) {
         return (x >= 0 && x < width) && (z >= 0 && z < depth);
     }
