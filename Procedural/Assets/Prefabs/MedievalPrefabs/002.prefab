@@ -130,13 +130,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   voxelID: 2
-  neightbours:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   top:
   - {fileID: 5452499004031658761, guid: 68677b3157b13304e9bf31246c8799ad, type: 3}
   - {fileID: 3901734011413972815}
@@ -188,6 +181,8 @@ MonoBehaviour:
   - {fileID: 5071237540220084048, guid: 4820ce2c52df7c74898a405e72a6eea7, type: 3}
   - {fileID: 1887420266109140050, guid: ba93ed26a7dc12c41b3b329c8d1871f0, type: 3}
   - {fileID: 1048148377768314477, guid: ccfc1ed2d77a3ca4ebb16f98287d20a9, type: 3}
+  - {fileID: 7896062672101495177, guid: 22d3b0d871378e34b8d1f0a0fe255ce8, type: 3}
+  - {fileID: 432471995434275986, guid: f1b5ed1e6105df6499740219085fb59b, type: 3}
   bottom:
   - {fileID: 5452499004031658761, guid: 68677b3157b13304e9bf31246c8799ad, type: 3}
   - {fileID: 3901734011413972815}

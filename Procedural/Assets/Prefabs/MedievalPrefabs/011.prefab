@@ -124,14 +124,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ff9a65950dbcba4fa1510bd4e03cf95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  voxelID: 0
-  neightbours:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  voxelID: 11
   top:
   - {fileID: 804692466836866429, guid: 40dea4b4050e5e34f838ff3c984702ff, type: 3}
   front:
