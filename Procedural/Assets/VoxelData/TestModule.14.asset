@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 117e3a763cbbb76468ef60c14050b8a1, type: 3}
+  m_Name: TestModule.14
+  m_EditorClassIdentifier: 
+  _mesh: {fileID: -2865104911859505335, guid: 433a2ae6f125e10459220104128332e9, type: 3}
+  _mirrorX: 0
+  _mirrorY: 0
+  _mirrorZ: 0
+  _rotateX: 0
+  _rotateY: 1
+  _rotateZ: 0
