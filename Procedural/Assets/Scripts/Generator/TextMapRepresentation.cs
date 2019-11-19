@@ -1,6 +1,32 @@
 using UnityEngine;
 public class TextMapRepresentation : MapRepresentation
 {
+
+    public override void Update ()
+    {
+        if (LetsGetCreative)
+        {
+            LetsGetCreative = false;
+            if (!_generator)
+            {
+                Debug.Log("No Generator provided.");
+                return;
+            }
+
+            
+            Clean();
+            _map = _generator.Map;
+            _pieces = _generator.Pieces;
+            CreateGO();
+        }
+
+        if (LetsAgreeNotBeCreativeAgaian)
+        {
+            LetsAgreeNotBeCreativeAgaian = false;
+            Clean();
+        }
+    }
+
     public override void CreateGO()
     {
         for (int i = 0; i < transform.childCount; i++)
@@ -20,7 +46,7 @@ public class TextMapRepresentation : MapRepresentation
                     VoxelPiece cPiece = _pieces[_map[i,j,k]];
                     GameObject go = new GameObject(i + "|" + j + "|" + k);
                     go.transform.parent = transform;
-                    go.transform.localPosition = new Vector3(i,j,k);
+                    go.transform.localPosition = new Vector3(i,j+.5f,k);
                     go.transform.localScale = Vector3.one * .2f;
                     go.AddComponent<TextMesh>().text = _map[i,j,k].ToString();
 

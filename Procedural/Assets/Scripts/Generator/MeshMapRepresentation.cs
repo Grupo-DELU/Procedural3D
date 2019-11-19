@@ -6,10 +6,7 @@ public class MeshMapRepresentation : MapRepresentation
 
     public override void CreateGO()
     {
-        for (int i = 0; i < transform.childCount; i++)
-        {
-            DestroyImmediate(transform.GetChild(i).gameObject);
-        }
+        Clean();
 
         for (int i = 0; i < _map.GetLength(0); i++)
         {

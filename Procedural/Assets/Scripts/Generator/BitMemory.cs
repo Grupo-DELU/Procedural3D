@@ -41,8 +41,6 @@ public class BitMemory
                 vIndxs.Add(i);
         }
 
-        Debug.Log(vIndxs.Count);
-
         return vIndxs;
     }
 

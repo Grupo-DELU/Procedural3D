@@ -33,6 +33,9 @@ public class RawVoxelPiece : ScriptableObject
     [SerializeField]
     private bool _rotateZ = false;
 
+    [SerializeField]
+    private bool _isGround = false;
+
     /// <summary>
     /// Gets the mesh of the piece.
     /// </summary>
@@ -87,12 +90,21 @@ public class RawVoxelPiece : ScriptableObject
         }
     }
 
-       /// <summary>
+    /// <summary>
     /// Gets if the piecr has to be considered mirrored against the z-axis
     /// </summary>
     public bool mirrorZ {
         get {
             return _mirrorZ;
+        }
+    }
+
+    /// <summary>
+    /// Gets if the piecr has to be considered mirrored against the z-axis
+    /// </summary>
+    public bool IsGround {
+        get {
+            return _isGround;
         }
     }
 }

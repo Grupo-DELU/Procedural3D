@@ -19,3 +19,4 @@ MonoBehaviour:
   _rotateX: 0
   _rotateY: 0
   _rotateZ: 0
+  _isGround: 0

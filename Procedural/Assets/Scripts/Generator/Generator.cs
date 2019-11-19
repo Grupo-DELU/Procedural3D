@@ -13,8 +13,9 @@ public class Generator : MonoBehaviour
     [SerializeField]
     private int _sizeX = 4, _sizeY = 4, _sizeZ = 4; 
 
-    public bool Execute = false;
-
+    public bool CreateMap = false;
+    public bool InitPieces = false;
+    
     private List<VoxelPiece> _pieces;
     private int[,,] _map;
     BitMemory[,,] _voxelPosibilites = null;
@@ -44,6 +45,16 @@ public class Generator : MonoBehaviour
         }
     }
 
+    public void GeneratePieces()
+    {
+        _map = new int[_pieces.Count,1,1];
+        
+        for (int i = 0; i < _pieces.Count; i++)
+        {
+            _map[i,0,0] = i;
+        }
+    }
+
     public void Generate() 
     {
         if (_sizeX < 2)
@@ -54,7 +65,7 @@ public class Generator : MonoBehaviour
             Debug.Log("Z size has to be greater than 2");
         else
         {
-            _pieces = _vpi.GetPieces();
+            //_pieces = _vpi.GetPieces();
             InitMap();
 
             _voxelPosibilites = new BitMemory[_sizeX+1,_sizeY+1,_sizeZ+1];
@@ -135,13 +146,13 @@ public class Generator : MonoBehaviour
         if (_map[x,y,z+1] > 0 && _map[x,y,z+1] < _pieces.Count)
             _sideConstraint[(int)Side.right] = _pieces[_map[x,y,z+1]][(int)Side.left];
 
-        Debug.Log(x + "|" + y + "|" + z + "|");
-        Debug.Log("Front: " + _sideConstraint[(int)Side.front]);
-        Debug.Log("Back: " + _sideConstraint[(int)Side.back]);
-        Debug.Log("Up: " + _sideConstraint[(int)Side.up]);
-        Debug.Log("Down: " + _sideConstraint[(int)Side.down]);
-        Debug.Log("Left: " + _sideConstraint[(int)Side.left]);
-        Debug.Log("Right: " + _sideConstraint[(int)Side.right]);
+        // Debug.Log(x + "|" + y + "|" + z + "|");
+        // Debug.Log("Front: " + _sideConstraint[(int)Side.front]);
+        // Debug.Log("Back: " + _sideConstraint[(int)Side.back]);
+        // Debug.Log("Up: " + _sideConstraint[(int)Side.up]);
+        // Debug.Log("Down: " + _sideConstraint[(int)Side.down]);
+        // Debug.Log("Left: " + _sideConstraint[(int)Side.left]);
+        // Debug.Log("Right: " + _sideConstraint[(int)Side.right]);
 
         
         for (int i = 0; i < _pieces.Count; i++)
@@ -168,7 +179,7 @@ public class Generator : MonoBehaviour
             _voxelPosibilites[x,y,z][i] = validPiece;
         }
 
-        Debug.Log( _voxelPosibilites[x,y,z].ToString());
+        // Debug.Log( _voxelPosibilites[x,y,z].ToString());
 
     }
 
@@ -233,10 +244,16 @@ public class Generator : MonoBehaviour
     
     void Update()
     {
-        if (Execute)
+        if (CreateMap)
         {
-            Execute = false;
+            CreateMap = false;
             Generate();
+        }
+
+        if (InitPieces)
+        {
+            InitPieces = false;
+            _pieces = _vpi.GetPieces();
         }
     }
 

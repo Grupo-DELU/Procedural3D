@@ -17,9 +17,11 @@ public class VoxelPieceInitializer
     private RawVoxelPiece[] _candidates = null;
     [SerializeField]
     private float _voxelSize = 1;
+    [SerializeField]
+    private float threshold = 0;
 
     private List<VoxelPiece> voxelPieces; 
-    private List<Border> borders;
+    public List<Border> borders;
 
     /// <summary>
     /// Creates the voxel pieces based on the raw voxel pieces, doing any post processing necesarry to the pieces, as well as creating
@@ -35,7 +37,7 @@ public class VoxelPieceInitializer
         voxelPieces.Add(
             new VoxelPiece(
                 emptyMesh,
-                IdentifyPieceBorders(emptyMesh),
+                IdentifyPieceBorders(emptyMesh, false),
                 Vector3.one,
                 Vector3.zero
             )
@@ -51,7 +53,7 @@ public class VoxelPieceInitializer
             List<VoxelPiece> vpsToAdd = new List<VoxelPiece>();
             
             // Consider base piece
-            cBorders = IdentifyPieceBorders(p.mesh);
+            cBorders = IdentifyPieceBorders(p.mesh, p.IsGround);
             vpsToAdd.Add(new VoxelPiece(p.mesh, cBorders, Vector3.zero, Vector3.one));
             
             if (p.mirrorX)
@@ -61,7 +63,7 @@ public class VoxelPieceInitializer
                 foreach (VoxelPiece vp in vpsToAdd)
                 {
                     Mesh cMesh = MirrorMesh(vp.Mesh, Axis.x);
-                    cBorders = IdentifyPieceBorders(cMesh);
+                    cBorders = IdentifyPieceBorders(cMesh, p.IsGround);
                     cSclOffset = Vector3.Scale(vp.ScaleOffset, new Vector3(-1,1,1));
                     cVps.Add(
                         new VoxelPiece(
@@ -82,7 +84,7 @@ public class VoxelPieceInitializer
                 foreach (VoxelPiece vp in vpsToAdd)
                 {
                     Mesh cMesh = MirrorMesh(vp.Mesh, Axis.y);
-                    cBorders = IdentifyPieceBorders(cMesh);
+                    cBorders = IdentifyPieceBorders(cMesh, p.IsGround);
                     cSclOffset = Vector3.Scale(vp.ScaleOffset, new Vector3(1,-1,1));
                     cVps.Add(
                         new VoxelPiece(
@@ -103,7 +105,7 @@ public class VoxelPieceInitializer
                 foreach (VoxelPiece vp in vpsToAdd)
                 {
                     Mesh cMesh = MirrorMesh(vp.Mesh, Axis.z);
-                    cBorders = IdentifyPieceBorders(cMesh);
+                    cBorders = IdentifyPieceBorders(cMesh, p.IsGround);
                     cSclOffset = Vector3.Scale(vp.ScaleOffset, new Vector3(1,1,-1));
                     cVps.Add(
                         new VoxelPiece(
@@ -123,12 +125,13 @@ public class VoxelPieceInitializer
 
                 foreach (VoxelPiece vp in vpsToAdd)
                 {
+                    Mesh cMesh = vp.Mesh;
                     // Rotation for 90, 180 and 270
                     for (int i = 0; i < 3; i++)
                     {
-                       Mesh cMesh = RotateMeshNinetyDegrees(vp.Mesh, Axis.x);
-                        cBorders = IdentifyPieceBorders(cMesh);
-                        cRotOffset = new Vector3(90*i, 0, 0) + vp.RotOfftset;
+                        cMesh = RotateMeshNinetyDegrees(cMesh, Axis.x);
+                        cBorders = IdentifyPieceBorders(cMesh, p.IsGround);
+                        cRotOffset = new Vector3(90*(i+1), 0, 0) + vp.RotOfftset;
                         cVps.Add(
                             new VoxelPiece(
                                 vp.Mesh, 
@@ -148,12 +151,13 @@ public class VoxelPieceInitializer
 
                 foreach (VoxelPiece vp in vpsToAdd)
                 {
+                    Mesh cMesh = vp.Mesh;
                     // Rotation for 90, 180 and 270
                     for (int i = 0; i < 3; i++)
                     {
-                       Mesh cMesh = RotateMeshNinetyDegrees(vp.Mesh, Axis.y);
-                        cBorders = IdentifyPieceBorders(cMesh);
-                        cRotOffset = new Vector3(0, 90*i, 0) + vp.RotOfftset;
+                       cMesh = RotateMeshNinetyDegrees(cMesh, Axis.y);
+                        cBorders = IdentifyPieceBorders(cMesh, p.IsGround);
+                        cRotOffset = new Vector3(0, 90*(i+1), 0) + vp.RotOfftset;
                         cVps.Add(
                             new VoxelPiece(
                                 vp.Mesh, 
@@ -173,12 +177,13 @@ public class VoxelPieceInitializer
 
                 foreach (VoxelPiece vp in vpsToAdd)
                 {
+                    Mesh cMesh = vp.Mesh;
                     // Rotation for 90, 180 and 270
                     for (int i = 0; i < 3; i++)
                     {
-                       Mesh cMesh = RotateMeshNinetyDegrees(vp.Mesh, Axis.z);
-                        cBorders = IdentifyPieceBorders(cMesh);
-                        cRotOffset = new Vector3(0, 0, 90*i) + vp.RotOfftset;
+                        cMesh = RotateMeshNinetyDegrees(cMesh, Axis.z);
+                        cBorders = IdentifyPieceBorders(cMesh, p.IsGround);
+                        cRotOffset = new Vector3(0, 0, 90*(i+1)) + vp.RotOfftset;
                         cVps.Add(
                             new VoxelPiece(
                                 vp.Mesh, 
@@ -204,7 +209,7 @@ public class VoxelPieceInitializer
     /// </summary>
     /// <param name="piece">Mesh associated with the piece.</param>
     /// <returns>Array of Borders.</returns>
-    private int[] IdentifyPieceBorders(Mesh piece)
+    private int[] IdentifyPieceBorders(Mesh piece, bool isGroudnd)
     {
         Border[] cBorders = new Border[6];
         int[] cIntBorder = new int[6];
@@ -213,31 +218,38 @@ public class VoxelPieceInitializer
         for (int i = 0; i < 6; i++)
             verts[i] = new List<Vector3>();
 
+        RoundVertices(piece);
 
         foreach (var v in piece.vertices)
         {
             // Front Side
-            if (v.x == _voxelSize/2)
+            if (Mathf.Abs(v.x -_voxelSize/2) < threshold)
                 verts[(int)Side.front].Add(new Vector3(0, v.y, v.z));
             // Back Side
-            if (v.x == -_voxelSize/2)
+            if (Mathf.Abs(v.x +_voxelSize/2) < threshold)
                 verts[(int)Side.back].Add(new Vector3(0, v.y, v.z));
             // Up Side
-            if (v.y == _voxelSize)
+            if (Mathf.Abs(v.y - _voxelSize) < threshold)
                 verts[(int)Side.up].Add(new Vector3(v.x, 0, v.z));
             // Down Side
-            if (v.y == 0)
+            if (v.y < threshold)
                 verts[(int)Side.down].Add(new Vector3(v.x, 0, v.z));
             // Right Side
-            if (v.z == _voxelSize/2)
+            if (Mathf.Abs(v.z - _voxelSize/2) < threshold)
                 verts[(int)Side.right].Add(new Vector3(v.x, v.y, 0));
             // Left Side
-            if (v.z == -_voxelSize/2)
+            if (Mathf.Abs(v.z +_voxelSize/2) < threshold)
                 verts[(int)Side.left].Add(new Vector3(v.x, v.y, 0));
         }
 
         for (int i = 0; i < 6; i++)
         {
+            if (isGroudnd && i == (int)Side.down)
+            {
+                cIntBorder[i] = 0;
+                continue;
+            }
+
             cBorders[i] = new Border(verts[i]);
             int isBrder = isBorder(cBorders[i]); 
 
@@ -268,6 +280,22 @@ public class VoxelPieceInitializer
                 return i;
         }
         return -1;
+    }
+
+    private void RoundVertices(Mesh m)
+    {
+        List<Vector3> vertices = new List<Vector3>();
+        m.GetVertices(vertices);
+
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            vertices[i] = new Vector3 (
+                    (float) Math.Round(vertices[i].x,2),
+                    (float) Math.Round(vertices[i].y,2),
+                    (float) Math.Round(vertices[i].z,2)
+                );        
+        }
+
     }
 
     /// <summary>
