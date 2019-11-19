@@ -11,8 +11,6 @@ public class Generator : MonoBehaviour
     [SerializeField]
     private int _groundPiece = 0;
     [SerializeField]
-    Material _baseMaterial = null;
-    [SerializeField]
     private int _sizeX = 4, _sizeY = 4, _sizeZ = 4; 
 
     public bool Execute = false;
@@ -20,9 +18,31 @@ public class Generator : MonoBehaviour
     private List<VoxelPiece> _pieces;
     private int[,,] _map;
     BitMemory[,,] _voxelPosibilites = null;
-    GameObject[,,] _mapGO;
+    private bool _isGenerated = false;
 
-    Stack<uint> s;
+    /// <summary>
+    /// Gets the last map generated.
+    /// </summary>
+    /// <value></value>
+    public int[,,] Map
+    {
+        get {
+            if (!_isGenerated)
+                Generate();
+
+            return _map;
+        }
+    }
+
+    /// <summary>
+    /// Gets the pieces used to build the map.
+    /// </summary>
+    public List<VoxelPiece> Pieces
+    {
+        get {
+            return _pieces;
+        }
+    }
 
     public void Generate() 
     {
@@ -72,43 +92,9 @@ public class Generator : MonoBehaviour
                     }
                 }     
             }
-
-            GenerateGO();
+            Debug.Log("N Pieces: " + _pieces.Count);
+            _isGenerated = true;
         }
-
-    }
-
-    /// <summary>
-    /// Generates the gameobjects for the voxel pieces indicated in the map variable.
-    /// </summary>
-    private void GenerateGO()
-    {
-        for (int i = 0; i < transform.childCount; i++)
-        {
-            DestroyImmediate(transform.GetChild(i).gameObject);
-        }
-
-        for (int i = 0; i < _sizeX+2; i++)
-        {
-            for (int j = 0; j < _sizeY+2; j++)
-            {
-                for (int k = 0; k < _sizeZ+2; k++)
-                {
-                    if (_map[i,j,k] < 1)
-                        continue;
-
-                    VoxelPiece cPiece = _pieces[_map[i,j,k]];
-                    GameObject go = new GameObject(i + "|" + j + "|" + k);
-                    go.transform.parent = transform;
-                    go.transform.localPosition = new Vector3(i,j,k);
-                    go.transform.localEulerAngles = cPiece.RotOfftset;
-                    go.transform.localScale = cPiece.ScaleOffset;
-                    go.AddComponent<MeshFilter>().mesh = cPiece.Mesh;
-                    go.AddComponent<MeshRenderer>().material = _baseMaterial;
-                }
-            }
-        }
-        
     }
 
     /// <summary>
@@ -126,49 +112,63 @@ public class Generator : MonoBehaviour
             _sideConstraint[i] = -1;
 
         // Back constraint
-        if (_map[x-1,y,z] >= 0 && _map[x-1,y,z] < _pieces.Count)
+        if (_map[x-1,y,z] > 0 && _map[x-1,y,z] < _pieces.Count)
             _sideConstraint[(int)Side.back] = _pieces[_map[x-1,y,z]][(int)Side.front];
 
         // Front constraint
-        if (_map[x+1,y,z] >= 0 && _map[x+1,y,z] < _pieces.Count)
-            _sideConstraint[(int)Side.front] = _pieces[_map[x-1,y,z]][(int)Side.back];
+        if (_map[x+1,y,z] > 0 && _map[x+1,y,z] < _pieces.Count)
+            _sideConstraint[(int)Side.front] = _pieces[_map[x+1,y,z]][(int)Side.back];
 
         // Down constraint
-        if (y > 0 && _map[x,y-1,z] >= 0 && _map[x,y-1,z] < _pieces.Count)
+        if (y > 0 && _map[x,y-1,z] > 0 && _map[x,y-1,z] < _pieces.Count)
             _sideConstraint[(int)Side.down] = _pieces[_map[x,y-1,z]][(int)Side.up];
 
         // Up constraint
-        if (_map[x,y+1,z] >= 0 && _map[x,y+1,z] < _pieces.Count)
-            _sideConstraint[(int)Side.up] = _pieces[_map[x,y+1,z]][(int)Side.left];
+        if (_map[x,y+1,z] > 0 && _map[x,y+1,z] < _pieces.Count)
+            _sideConstraint[(int)Side.up] = _pieces[_map[x,y+1,z]][(int)Side.down];
 
         // Left constraint
-        if (_map[x,y,z-1] >= 0 && _map[x,y,z-1] < _pieces.Count )
+        if (_map[x,y,z-1] > 0 && _map[x,y,z-1] < _pieces.Count )
             _sideConstraint[(int)Side.left] = _pieces[_map[x,y,z-1]][(int)Side.right];
 
         // Right constraint
-        if (_map[x,y,z+1] >= 0 && _map[x,y,z+1] < _pieces.Count)
+        if (_map[x,y,z+1] > 0 && _map[x,y,z+1] < _pieces.Count)
             _sideConstraint[(int)Side.right] = _pieces[_map[x,y,z+1]][(int)Side.left];
 
+        Debug.Log(x + "|" + y + "|" + z + "|");
+        Debug.Log("Front: " + _sideConstraint[(int)Side.front]);
+        Debug.Log("Back: " + _sideConstraint[(int)Side.back]);
+        Debug.Log("Up: " + _sideConstraint[(int)Side.up]);
+        Debug.Log("Down: " + _sideConstraint[(int)Side.down]);
+        Debug.Log("Left: " + _sideConstraint[(int)Side.left]);
+        Debug.Log("Right: " + _sideConstraint[(int)Side.right]);
 
+        
         for (int i = 0; i < _pieces.Count; i++)
         {
-            if (_voxelPosibilites[x,y,z][i])
+            bool validPiece = true;
+            int freeSides = 6;
+            for (int j = 0; j < 6; j++)
             {
-                bool validPiece = true;
-                for (int j = 0; j < 6; j++)
-                {
-                    if (_sideConstraint[j] < 0 )
-                        continue;
+                if (_sideConstraint[j] < 1 )
+                    continue;
 
-                    if (_sideConstraint[j] != _pieces[i][j])
-                    {
-                        validPiece = false;
-                        break;
-                    }
+                freeSides--;
+                
+                if (_sideConstraint[j] != _pieces[i][j])
+                {
+                    validPiece = false;
+                    break;
                 }
-                _voxelPosibilites[x,y,z][i] = validPiece;
             }
-        } 
+
+            if (freeSides == 6)
+                validPiece = false;
+
+            _voxelPosibilites[x,y,z][i] = validPiece;
+        }
+
+        Debug.Log( _voxelPosibilites[x,y,z].ToString());
 
     }
 
@@ -235,8 +235,8 @@ public class Generator : MonoBehaviour
     {
         if (Execute)
         {
-            Generate();
             Execute = false;
+            Generate();
         }
     }
 

@@ -23,7 +23,7 @@ public class BitMemory
         }
         get {
             uint cInt =_bits[index/32];
-            return (0 == (cInt & 1<<(index%32)));
+            return (0 != (cInt & (1<<(index%32))));
         }
     }
 
@@ -41,7 +41,29 @@ public class BitMemory
                 vIndxs.Add(i);
         }
 
+        Debug.Log(vIndxs.Count);
+
         return vIndxs;
+    }
+
+    public override string ToString()
+    {
+        string str = "";
+
+        foreach(var ui in _bits)
+        {
+            for (int i = 0; i < 32; i++)
+            {
+                if ((1<<i & ui) != 0)
+                {
+                    str = "1" + str;
+                }
+                else
+                    str = "0" + str;
+            }
+        }
+
+        return str;
     }
 
 }

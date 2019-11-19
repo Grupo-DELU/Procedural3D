@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TestModule.11
   m_EditorClassIdentifier: 
   _mesh: {fileID: -153830957423991239, guid: 433a2ae6f125e10459220104128332e9, type: 3}
-  _mirrorX: 0
+  _mirrorX: 1
   _mirrorY: 0
   _mirrorZ: 0
   _rotateX: 0

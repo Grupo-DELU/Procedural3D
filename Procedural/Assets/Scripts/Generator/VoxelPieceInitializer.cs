@@ -28,6 +28,7 @@ public class VoxelPieceInitializer
     public List<VoxelPiece> GetPieces()
     {
         voxelPieces = new List<VoxelPiece>();
+        borders = new List<Border>();
 
         // Empty Space
         Mesh emptyMesh = new Mesh();
@@ -194,7 +195,7 @@ public class VoxelPieceInitializer
             voxelPieces.AddRange(vpsToAdd);
         }
 
-
+        Debug.Log("N Borders: " + borders.Count);
         return voxelPieces;           
     }
 
@@ -205,7 +206,6 @@ public class VoxelPieceInitializer
     /// <returns>Array of Borders.</returns>
     private int[] IdentifyPieceBorders(Mesh piece)
     {
-        borders = new List<Border>();
         Border[] cBorders = new Border[6];
         int[] cIntBorder = new int[6];
         List<Vector3>[] verts = new List<Vector3>[6];
@@ -226,7 +226,7 @@ public class VoxelPieceInitializer
             if (v.y == _voxelSize)
                 verts[(int)Side.up].Add(new Vector3(v.x, 0, v.z));
             // Down Side
-            if (v.x == 0)
+            if (v.y == 0)
                 verts[(int)Side.down].Add(new Vector3(v.x, 0, v.z));
             // Right Side
             if (v.z == _voxelSize/2)
@@ -239,16 +239,35 @@ public class VoxelPieceInitializer
         for (int i = 0; i < 6; i++)
         {
             cBorders[i] = new Border(verts[i]);
-            if (!borders.Contains(cBorders[i]))
+            int isBrder = isBorder(cBorders[i]); 
+
+            if (isBrder < 0)
             {
                 borders.Add(cBorders[i]);
                 cIntBorder[i] = borders.Count-1; 
             }   
             else 
-                cIntBorder[i] = borders.IndexOf(cBorders[i]);
+                cIntBorder[i] = isBrder;
         }
 
         return cIntBorder;
+    }
+
+    /// <summary>
+    /// Check if a given border is already registered in the border list. 
+    /// Returns the index of the border if it's registered. 
+    /// </summary>
+    /// <param name="b">Border to check if it's registered.</param>
+    /// <returns>Int > 0 if registered. -1 otherwise.</returns>
+    private int isBorder(Border b)
+    {
+        for(int i = 0; i < borders.Count; i++)
+        {
+            Border bdr = borders[i];
+            if (Border.Compare(bdr, b))
+                return i;
+        }
+        return -1;
     }
 
     /// <summary>
