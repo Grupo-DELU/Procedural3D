@@ -44,7 +44,7 @@ public class VoxelPieceIdentifier : MonoBehaviour
         _voxelPieces = new List<VoxelPiece>();
         _borders = new List<Border>();
 
-        // Empty Space
+        // Empty Space, the fisrt piece is always an empty voxel.
         Mesh emptyMesh = new Mesh();
         _voxelPieces.Add(
             new VoxelPiece(
@@ -225,6 +225,36 @@ public class VoxelPieceIdentifier : MonoBehaviour
     {
         Border[] cBorders = new Border[6];
         int[] cIntBorder = new int[6];
+        
+        float[] maxSides = new float[6];
+        
+        if (_voxelSize < 0)
+            foreach (var v in piece.vertices)
+            {
+                if (v.x > maxSides[(int)Side.front])
+                    maxSides[(int)Side.front] = v.x;
+                if (v.x < maxSides[(int)Side.back])
+                    maxSides[(int)Side.back] = v.x;
+                if (v.y > maxSides[(int)Side.up])
+                    maxSides[(int)Side.up] = v.y;
+                if (v.y < maxSides[(int)Side.down])
+                    maxSides[(int)Side.down] = v.y;
+                if (v.z > maxSides[(int)Side.right])
+                    maxSides[(int)Side.right] = v.z;
+                if (v.z < maxSides[(int)Side.left])
+                    maxSides[(int)Side.left] = v.z;
+            }
+        else
+        {
+            maxSides[(int)Side.front] = _voxelSize/2;
+            maxSides[(int)Side.back] = -_voxelSize/2;
+            maxSides[(int)Side.up] = _voxelSize;
+            maxSides[(int)Side.down] = 0;
+            maxSides[(int)Side.right] = _voxelSize/2;
+            maxSides[(int)Side.left] = -_voxelSize/2;
+        }
+
+
         List<Vector3>[] verts = new List<Vector3>[6];
 
         for (int i = 0; i < 6; i++)
@@ -235,22 +265,22 @@ public class VoxelPieceIdentifier : MonoBehaviour
         foreach (var v in piece.vertices)
         {
             // Front Side
-            if (Mathf.Abs(v.x -_voxelSize/2) < _threshold)
+            if (Mathf.Abs(v.x - maxSides[(int)Side.front]) < _threshold)
                 verts[(int)Side.front].Add(new Vector3(0, v.y, v.z));
             // Back Side
-            if (Mathf.Abs(v.x +_voxelSize/2) < _threshold)
+            if (Mathf.Abs(v.x - maxSides[(int)Side.back]) < _threshold)
                 verts[(int)Side.back].Add(new Vector3(0, v.y, v.z));
             // Up Side
-            if (Mathf.Abs(v.y - _voxelSize) < _threshold)
+            if (Mathf.Abs(v.y - maxSides[(int)Side.up]) < _threshold)
                 verts[(int)Side.up].Add(new Vector3(v.x, 0, v.z));
             // Down Side
-            if (v.y < _threshold)
+            if (Mathf.Abs(v.y - maxSides[(int)Side.down]) < _threshold)
                 verts[(int)Side.down].Add(new Vector3(v.x, 0, v.z));
             // Right Side
-            if (Mathf.Abs(v.z - _voxelSize/2) < _threshold)
+            if (Mathf.Abs(v.z - maxSides[(int)Side.right]) < _threshold)
                 verts[(int)Side.right].Add(new Vector3(v.x, v.y, 0));
             // Left Side
-            if (Mathf.Abs(v.z +_voxelSize/2) < _threshold)
+            if (Mathf.Abs(v.z - maxSides[(int)Side.left]) < _threshold)
                 verts[(int)Side.left].Add(new Vector3(v.x, v.y, 0));
         }
 

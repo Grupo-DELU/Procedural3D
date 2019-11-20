@@ -24,7 +24,7 @@ public class TextMapVisualization : MapVisualization
             {
                 for (int k = 0; k < map.GetLength(2); k++)
                 {
-                    if (map[i,j,k] < 1)
+                    if (map[i,j,k] < 0)
                         continue;
 
                     VoxelPiece cPiece = pieces[map[i,j,k]];

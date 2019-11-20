@@ -4,6 +4,11 @@ using System.Collections;
 
 public class WFCGenerator : Generator
 {
+    private struct VoxelCoord
+    {
+        public int x, y, z;
+    }
+
     private int _groundPiece = 0;
     private int _sizeX = 4, _sizeY = 4, _sizeZ = 4; 
     private BitMemory[,,] _voxelPosibilites = null;
@@ -52,6 +57,7 @@ public class WFCGenerator : Generator
         // Add 2 extra row/columns to build a cage around the generating space
         _map = new int[_sizeX+2,_sizeY+2,_sizeZ+2];
 
+        // The 0 piece is an empty voxel
         // Build "Cage"
         for (int i = 1; i < _sizeY + 2; i++)
         {
@@ -92,7 +98,7 @@ public class WFCGenerator : Generator
         // Init rest of map with -1.
         for (int i = 1; i < _sizeX+1; i++)
         {
-            for (int j = 1; j < _sizeY+1; j++)
+            for (int j = 0; j < _sizeY+1; j++)
             {
                 for (int k = 1; k < _sizeZ+1; k++)
                 {
@@ -103,11 +109,27 @@ public class WFCGenerator : Generator
     }
 
     /// <summary>
+    /// Function to sort observable voxels.null It compares the posibilities of each voxel.
+    /// </summary>
+    private int CompareObservableVoxels(VoxelCoord x, VoxelCoord y)
+    {
+        if (_voxelPosibilites[x.x, x.y, x.z].nValidIndexes == _voxelPosibilites[y.x, y.y, y.z].nValidIndexes)
+            return 0;
+
+        if (_voxelPosibilites[x.x, x.y, x.z].nValidIndexes > _voxelPosibilites[y.x, y.y, y.z].nValidIndexes)
+            return 1;
+
+        return -1;
+    }
+
+    /// <summary>
     /// Generates a map based on the Wave Function Collapse Algotithm
     /// https://github.com/mxgmn/WaveFunctionCollapse
     /// </summary>
     protected override void Generate() 
     {
+        // Build propagator
+
         _voxelPosibilites = new BitMemory[_sizeX+1,_sizeY+1,_sizeZ+1];
 
         // init DP memory
@@ -116,33 +138,94 @@ public class WFCGenerator : Generator
                 for (int k = 0; k < _sizeZ+1; k++)
                     _voxelPosibilites[i,j,k] = new BitMemory(_pieces.Count);
 
-        // start generation
         
+
+        // start generation, all not-assigned spaces have the value -1
+        List<VoxelCoord> observableVoxels = new List<VoxelCoord>();
+
         for (int j = 0; j < _sizeY+1; j++)
-        {
             for (int k = 1; k < _sizeZ+1; k++)
-            {
                 for (int i = 1; i < _sizeX+1; i++)
                 {
-                    if (_map[i,j,k] > 0)
-                        continue;
-
                     EvaluateTilePossibilities(i,j,k);
-                    List<int> possibilities = _voxelPosibilites[i,j,k].ValidIndexes;
-                    
-                    if (possibilities.Count == 0)
-                    {
-                        Debug.Log("Oops");
-
-                    }
-                    else
-                    {
-                        _map[i,j,k] = possibilities[Random.Range(0, possibilities.Count)];
-                    }
-                    
+                    VoxelCoord vc = new VoxelCoord();
+                    vc.x = i;
+                    vc.y = j;
+                    vc.z = k;
+                    observableVoxels.Add(vc);
                 }
-            }     
-        }
+
+        observableVoxels.Sort(CompareObservableVoxels);
+
+        bool isContradiction;
+        // do
+        // {
+            isContradiction = false;
+
+            while (observableVoxels.Count > 0)
+            {
+                // Lowest entropy voxel
+                VoxelCoord cVx = observableVoxels[0];
+
+                if (_voxelPosibilites[cVx.x, cVx.y, cVx.z].nValidIndexes == 0)
+                {
+                    Debug.Log("Oops");
+                    Debug.Log(cVx.x +"|"+ cVx.y +"|"+ cVx.z);
+                    isContradiction = true;
+                    break;
+                }
+                else
+                {
+                    Debug.Log("Non-Oops");
+                    // Choose random possibility
+                    Map[cVx.x, cVx.y, cVx.z] = Random.Range(0, _voxelPosibilites[cVx.x, cVx.y, cVx.z].nValidIndexes);
+                    Map[cVx.x, cVx.y, cVx.z] = _voxelPosibilites[cVx.x, cVx.y, cVx.z].ValidIndexes[Map[cVx.x, cVx.y, cVx.z]];
+                    
+                    // Update neighboards entropy
+                    observableVoxels.RemoveAt(0);
+                    if (cVx.x < _sizeX)
+                        EvaluateTilePossibilities(cVx.x+1,cVx.y,cVx.z);
+                    if (cVx.x > 1)
+                        EvaluateTilePossibilities(cVx.x-1,cVx.y,cVx.z);
+                    if (cVx.y < _sizeY)
+                        EvaluateTilePossibilities(cVx.x,cVx.y+1,cVx.z);
+                    if (cVx.y > 0)
+                        EvaluateTilePossibilities(cVx.x,cVx.y-1,cVx.z);
+                    if (cVx.z < _sizeZ)
+                        EvaluateTilePossibilities(cVx.x,cVx.y,cVx.z+1);
+                    if (cVx.z > 1)
+                        EvaluateTilePossibilities(cVx.x,cVx.y,cVx.z-1);
+
+                    observableVoxels.Sort(CompareObservableVoxels);
+                }
+            }
+        // } while (isContradiction);
+        
+        // for (int j = 0; j < _sizeY+1; j++)
+        // {
+        //     for (int k = 1; k < _sizeZ+1; k++)
+        //     {
+        //         for (int i = 1; i < _sizeX+1; i++)
+        //         {
+        //             if (_map[i,j,k] > 0)
+        //                 continue;
+
+        //             EvaluateTilePossibilities(i,j,k);
+        //             List<int> possibilities = _voxelPosibilites[i,j,k].ValidIndexes;
+                    
+        //             if (possibilities.Count == 0)
+        //             {
+        //                 Debug.Log("Oops");
+
+        //             }
+        //             else
+        //             {
+        //                 _map[i,j,k] = possibilities[Random.Range(0, possibilities.Count)];
+        //             }
+                    
+        //         }
+        //     }     
+        // }
     }
 
     /// <summary>
@@ -160,27 +243,27 @@ public class WFCGenerator : Generator
             _sideConstraint[i] = -1;
 
         // Back constraint
-        if (_map[x-1,y,z] > 0 && _map[x-1,y,z] < _pieces.Count)
+        if (_map[x-1,y,z] >= 0 && _map[x-1,y,z] < _pieces.Count)
             _sideConstraint[(int)Side.back] = _pieces[_map[x-1,y,z]][(int)Side.front];
 
         // Front constraint
-        if (_map[x+1,y,z] > 0 && _map[x+1,y,z] < _pieces.Count)
+        if (_map[x+1,y,z] >= 0 && _map[x+1,y,z] < _pieces.Count)
             _sideConstraint[(int)Side.front] = _pieces[_map[x+1,y,z]][(int)Side.back];
 
         // Down constraint
-        if (y > 0 && _map[x,y-1,z] > 0 && _map[x,y-1,z] < _pieces.Count)
+        if (y > 0 && _map[x,y-1,z] >= 0 && _map[x,y-1,z] < _pieces.Count)
             _sideConstraint[(int)Side.down] = _pieces[_map[x,y-1,z]][(int)Side.up];
 
         // Up constraint
-        if (_map[x,y+1,z] > 0 && _map[x,y+1,z] < _pieces.Count)
+        if (_map[x,y+1,z] >= 0 && _map[x,y+1,z] < _pieces.Count)
             _sideConstraint[(int)Side.up] = _pieces[_map[x,y+1,z]][(int)Side.down];
 
         // Left constraint
-        if (_map[x,y,z-1] > 0 && _map[x,y,z-1] < _pieces.Count )
+        if (_map[x,y,z-1] >= 0 && _map[x,y,z-1] < _pieces.Count )
             _sideConstraint[(int)Side.left] = _pieces[_map[x,y,z-1]][(int)Side.right];
 
         // Right constraint
-        if (_map[x,y,z+1] > 0 && _map[x,y,z+1] < _pieces.Count)
+        if (_map[x,y,z+1] >= 0 && _map[x,y,z+1] < _pieces.Count)
             _sideConstraint[(int)Side.right] = _pieces[_map[x,y,z+1]][(int)Side.left];
 
         // Debug.Log(x + "|" + y + "|" + z + "|");
@@ -195,13 +278,11 @@ public class WFCGenerator : Generator
         for (int i = 0; i < _pieces.Count; i++)
         {
             bool validPiece = true;
-            int freeSides = 6;
             for (int j = 0; j < 6; j++)
             {
-                if (_sideConstraint[j] < 1 )
+                if (_sideConstraint[j] < 0 )
                     continue;
 
-                freeSides--;
                 
                 if (_sideConstraint[j] != _pieces[i][j])
                 {
@@ -210,8 +291,7 @@ public class WFCGenerator : Generator
                 }
             }
 
-            if (freeSides == 6)
-                validPiece = false;
+  
 
             _voxelPosibilites[x,y,z][i] = validPiece;
         }
