@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Scriptable Object with the candidates to be a VoxelPiece with basic info to automate its initialiazation.
 /// </summary>
-[CreateAssetMenu(menuName = "Wave Function Collapse/ Raw Voxel Piece")]
+[CreateAssetMenu(menuName = "PCG/Raw Voxel Piece")]
 public class RawVoxelPiece : ScriptableObject 
 {
     [SerializeField]

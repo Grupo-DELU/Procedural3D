@@ -1,13 +1,12 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System;
 using UnityEngine;
 
 /// <summary>
 /// Component that given an array of meshes, identifies ther borders of each.
 /// </summary>
 [Serializable]
-public class VoxelPieceInitializer
+public class VoxelPieceIdentifier : MonoBehaviour
 {
     private enum Axis{
         x,y,z
@@ -18,23 +17,36 @@ public class VoxelPieceInitializer
     [SerializeField]
     private float _voxelSize = 1;
     [SerializeField]
-    private float threshold = 0;
+    private float _threshold = 0;
 
-    private List<VoxelPiece> voxelPieces; 
-    public List<Border> borders;
+    private List<VoxelPiece> _voxelPieces = null; 
+    private List<Border> _borders = null;
+
+    /// <summary>
+    /// Returns a list with the voxel pieces identified.
+    /// </summary>
+    /// <value></value>
+    public List<VoxelPiece> Pieces
+    {
+        get {
+            if (_voxelPieces == null || (_voxelPieces.Count == 0 && _candidates.Length > 0))
+                IdentifyPieces();
+            return _voxelPieces;
+        }
+    }
 
     /// <summary>
     /// Creates the voxel pieces based on the raw voxel pieces, doing any post processing necesarry to the pieces, as well as creating
     /// all the needed aditional data.
     /// </summary>
-    public List<VoxelPiece> GetPieces()
+    public void IdentifyPieces()
     {
-        voxelPieces = new List<VoxelPiece>();
-        borders = new List<Border>();
+        _voxelPieces = new List<VoxelPiece>();
+        _borders = new List<Border>();
 
         // Empty Space
         Mesh emptyMesh = new Mesh();
-        voxelPieces.Add(
+        _voxelPieces.Add(
             new VoxelPiece(
                 emptyMesh,
                 IdentifyPieceBorders(emptyMesh, false),
@@ -197,11 +209,11 @@ public class VoxelPieceInitializer
                 vpsToAdd.AddRange(cVps);    
             } 
 
-            voxelPieces.AddRange(vpsToAdd);
+            _voxelPieces.AddRange(vpsToAdd);
         }
 
-        Debug.Log("N Borders: " + borders.Count);
-        return voxelPieces;           
+        Debug.Log("N Pieces: " + _voxelPieces.Count);
+        Debug.Log("N Borders: " + _borders.Count);       
     }
 
     /// <summary>
@@ -223,22 +235,22 @@ public class VoxelPieceInitializer
         foreach (var v in piece.vertices)
         {
             // Front Side
-            if (Mathf.Abs(v.x -_voxelSize/2) < threshold)
+            if (Mathf.Abs(v.x -_voxelSize/2) < _threshold)
                 verts[(int)Side.front].Add(new Vector3(0, v.y, v.z));
             // Back Side
-            if (Mathf.Abs(v.x +_voxelSize/2) < threshold)
+            if (Mathf.Abs(v.x +_voxelSize/2) < _threshold)
                 verts[(int)Side.back].Add(new Vector3(0, v.y, v.z));
             // Up Side
-            if (Mathf.Abs(v.y - _voxelSize) < threshold)
+            if (Mathf.Abs(v.y - _voxelSize) < _threshold)
                 verts[(int)Side.up].Add(new Vector3(v.x, 0, v.z));
             // Down Side
-            if (v.y < threshold)
+            if (v.y < _threshold)
                 verts[(int)Side.down].Add(new Vector3(v.x, 0, v.z));
             // Right Side
-            if (Mathf.Abs(v.z - _voxelSize/2) < threshold)
+            if (Mathf.Abs(v.z - _voxelSize/2) < _threshold)
                 verts[(int)Side.right].Add(new Vector3(v.x, v.y, 0));
             // Left Side
-            if (Mathf.Abs(v.z +_voxelSize/2) < threshold)
+            if (Mathf.Abs(v.z +_voxelSize/2) < _threshold)
                 verts[(int)Side.left].Add(new Vector3(v.x, v.y, 0));
         }
 
@@ -251,12 +263,12 @@ public class VoxelPieceInitializer
             }
 
             cBorders[i] = new Border(verts[i]);
-            int isBrder = isBorder(cBorders[i]); 
+            int isBrder = IsBorder(cBorders[i]); 
 
             if (isBrder < 0)
             {
-                borders.Add(cBorders[i]);
-                cIntBorder[i] = borders.Count-1; 
+                _borders.Add(cBorders[i]);
+                cIntBorder[i] = _borders.Count-1; 
             }   
             else 
                 cIntBorder[i] = isBrder;
@@ -271,17 +283,21 @@ public class VoxelPieceInitializer
     /// </summary>
     /// <param name="b">Border to check if it's registered.</param>
     /// <returns>Int > 0 if registered. -1 otherwise.</returns>
-    private int isBorder(Border b)
+    private int IsBorder(Border b)
     {
-        for(int i = 0; i < borders.Count; i++)
+        for(int i = 0; i < _borders.Count; i++)
         {
-            Border bdr = borders[i];
+            Border bdr = _borders[i];
             if (Border.Compare(bdr, b))
                 return i;
         }
         return -1;
     }
 
+    /// <summary>
+    /// Reduce the decimals of the a Meshes's vertices's components to 2. 
+    /// </summary>
+    /// <param name="m">Mesh to round its vertices.</param>
     private void RoundVertices(Mesh m)
     {
         List<Vector3> vertices = new List<Vector3>();

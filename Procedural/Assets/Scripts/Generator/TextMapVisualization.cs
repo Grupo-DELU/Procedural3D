@@ -1,61 +1,46 @@
 using UnityEngine;
-public class TextMapRepresentation : MapRepresentation
+using System.Collections.Generic;
+
+/// <summary>
+/// Generates a visual representation of a given map with text meshes.
+/// </summary>
+public class TextMapVisualization : MapVisualization
 {
-
-    public override void Update ()
+    public TextMapVisualization(Transform rootGo)
     {
-        if (LetsGetCreative)
-        {
-            LetsGetCreative = false;
-            if (!_generator)
-            {
-                Debug.Log("No Generator provided.");
-                return;
-            }
-
-            
-            Clean();
-            _map = _generator.Map;
-            _pieces = _generator.Pieces;
-            CreateGO();
-        }
-
-        if (LetsAgreeNotBeCreativeAgaian)
-        {
-            LetsAgreeNotBeCreativeAgaian = false;
-            Clean();
-        }
+        _rootGO = rootGo;
     }
 
-    public override void CreateGO()
+    /// <summary>
+    /// Creates a text visualization GO for a given map and pieces.
+    /// </summary>
+    public override void CreateGO(int[,,] map, List<VoxelPiece> pieces)
     {
-        for (int i = 0; i < transform.childCount; i++)
-        {
-            DestroyImmediate(transform.GetChild(i).gameObject);
-        }
+        Clean();
 
-        for (int i = 0; i < _map.GetLength(0); i++)
+        for (int i = 0; i < map.GetLength(0); i++)
         {
-            for (int j = 0; j < _map.GetLength(1); j++)
+            for (int j = 0; j < map.GetLength(1); j++)
             {
-                for (int k = 0; k < _map.GetLength(2); k++)
+                for (int k = 0; k < map.GetLength(2); k++)
                 {
-                    if (_map[i,j,k] < 1)
+                    if (map[i,j,k] < 1)
                         continue;
 
-                    VoxelPiece cPiece = _pieces[_map[i,j,k]];
+                    VoxelPiece cPiece = pieces[map[i,j,k]];
                     GameObject go = new GameObject(i + "|" + j + "|" + k);
-                    go.transform.parent = transform;
+                    go.transform.parent = _rootGO;
                     go.transform.localPosition = new Vector3(i,j+.5f,k);
                     go.transform.localScale = Vector3.one * .2f;
-                    go.AddComponent<TextMesh>().text = _map[i,j,k].ToString();
+                    go.AddComponent<TextMesh>().text = map[i,j,k].ToString();
 
+                    // Borders visualizaion
                     for (int side = 0; side < 6; side++)
                     {
                         GameObject gos = new GameObject(i + "|" + j + "|" + k + "|Side" + side);
                         gos.transform.parent = go.transform;
                         gos.transform.localScale = Vector3.one*.5f;
-                        gos.AddComponent<TextMesh>().text = (_pieces[_map[i,j,k]][side]).ToString();
+                        gos.AddComponent<TextMesh>().text = (pieces[map[i,j,k]][side]).ToString();
                         gos.GetComponent<TextMesh>().color = Color.red;
                         switch (side)
                         {
@@ -79,8 +64,6 @@ public class TextMapRepresentation : MapRepresentation
                             break;
                         }
                     }
-
-
                 }
             }
         }
